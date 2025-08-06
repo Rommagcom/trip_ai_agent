@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tour Search - Поиск туров с ИИ</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .loading {
+            display: none;
+        }
+        .loading.show {
+            display: block;
+        }
+        .result-content {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-plane-departure text-3xl"></i>
+                    <div>
+                        <h1 class="text-3xl font-bold">AI Tour Search</h1>
+                        <p class="text-blue-100">Поиск туров с помощью искусственного интеллекта</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <i class="fas fa-search text-xl"></i>
+                    <i class="fas fa-globe text-xl"></i>
+                    <i class="fas fa-user text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Search Section -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl p-8 card-hover">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Найдите идеальный тур</h2>
+                    <p class="text-gray-600">Опишите ваши пожелания, и ИИ поможет найти подходящие варианты</p>
+                </div>
+
+                <!-- Search Form -->
+                <form id="searchForm" class="space-y-6">
+                    <div class="relative">
+                        <textarea 
+                            id="searchQuery" 
+                            name="query" 
+                            rows="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            placeholder="Например: Ищу тур в Европу на 7 дней, бюджет до 1000 евро, хочу посетить Париж и Рим..."
+                            required
+                        ></textarea>
+                        <div class="absolute bottom-3 right-3">
+                            <button 
+                                type="submit" 
+                                id="searchBtn"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                            >
+                                <i class="fas fa-search"></i>
+                                <span>Найти туры</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Loading Indicator -->
+                <div id="loading" class="loading text-center py-8">
+                    <div class="inline-flex items-center space-x-2">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span class="text-gray-600">ИИ обрабатывает ваш запрос...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="mt-8 space-y-6" style="display: none;">
+                <div class="bg-white rounded-2xl shadow-xl p-8 card-hover">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                            Результаты поиска
+                        </h3>
+                        <button id="clearResults" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="resultContent" class="prose max-w-none">
+                        <!-- Results will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Section -->
+            <div id="error" class="mt-8 bg-red-50 border border-red-200 rounded-2xl p-6" style="display: none;">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                    <div>
+                        <h3 class="text-red-800 font-semibold">Ошибка</h3>
+                        <p id="errorMessage" class="text-red-600 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-6xl mx-auto mt-16">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Возможности системы</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-6 shadow-lg card-hover text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-brain text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">ИИ-ассистент</h3>
+                    <p class="text-gray-600">Умный поиск туров с использованием искусственного интеллекта</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg card-hover text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-database text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Векторная база данных</h3>
+                    <p class="text-gray-600">Быстрый поиск по векторной базе данных Milvus</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg card-hover text-center">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tools text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Инструменты</h3>
+                    <p class="text-gray-600">Доступ к различным инструментам для поиска информации</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8">
+            <div class="text-center">
+                <p>&copy; 2024 AI Tour Search. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('searchForm');
+            const searchQuery = document.getElementById('searchQuery');
+            const searchBtn = document.getElementById('searchBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            const error = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            const clearResults = document.getElementById('clearResults');
+
+            searchForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const query = searchQuery.value.trim();
+                if (!query) {
+                    showError('Пожалуйста, введите запрос для поиска');
+                    return;
+                }
+
+                // Show loading
+                loading.classList.add('show');
+                results.style.display = 'none';
+                error.style.display = 'none';
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Поиск...</span>';
+
+                try {
+                    const response = await fetch('/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showResults(data);
+                    } else {
+                        showError(data.error || 'Произошла ошибка при поиске');
+                    }
+                } catch (err) {
+                    showError('Ошибка сети: ' + err.message);
+                } finally {
+                    // Hide loading
+                    loading.classList.remove('show');
+                    searchBtn.disabled = false;
+                    searchBtn.innerHTML = '<i class="fas fa-search"></i> <span>Найти туры</span>';
+                }
+            });
+
+            function showResults(data) {
+                const result = data.result || data.details || 'Результат не найден';
+                const details = data.details || '';
+                
+                let content = '';
+                
+                if (result) {
+                    content += `<div class="mb-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-star text-yellow-500 mr-2"></i>
+                            Основной результат
+                        </h4>
+                        <div class="bg-gray-50 rounded-lg p-4 result-content">
+                            ${formatMarkdown(result)}
+                        </div>
+                    </div>`;
+                }
+                
+                if (details && details !== result) {
+                    content += `<div>
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3">
+                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                            Дополнительная информация
+                        </h4>
+                        <div class="bg-blue-50 rounded-lg p-4 result-content">
+                            ${formatMarkdown(details)}
+                        </div>
+                    </div>`;
+                }
+
+                resultContent.innerHTML = content;
+                results.style.display = 'block';
+                
+                // Scroll to results
+                results.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                error.style.display = 'block';
+                error.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function formatMarkdown(text) {
+                // Simple markdown formatting
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code class="bg-gray-200 px-1 rounded">$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            clearResults.addEventListener('click', function() {
+                results.style.display = 'none';
+                searchQuery.value = '';
+            });
+        });
+    </script>
+</body>
+</html> 
